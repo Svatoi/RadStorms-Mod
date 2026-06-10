@@ -46,11 +46,11 @@ public class ModEvents {
 
                     if (playerY > safeZoneY) {
                         player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                            radiation.addRadiation(0.1f);
+                            radiation.addRadiation(0.5f);
 
                             RadStormsMod.LOGGER.info("The player is being irradiated! Current radiation level: " + radiation.getRadiation());
                             if (radiation.isMax()) {
-                                player.hurt(level.damageSources().magic(), 1.0f)
+                                player.hurt(level.damageSources().magic(), 1.0f);
                             }
                         });
                     }

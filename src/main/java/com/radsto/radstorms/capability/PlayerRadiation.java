@@ -10,8 +10,8 @@ public class PlayerRadiation {
         return this.radiation;
     }
 
-    public void setRadiation(float radiation) {
-        this.radiation = Math.max(0.0f, Math.min(0, MAX_RADIATION));
+    public void setRadiation(float value) {
+        this.radiation = Math.max(0.0f, Math.min(value, MAX_RADIATION));
     }
 
     public void addRadiation(float value) {
