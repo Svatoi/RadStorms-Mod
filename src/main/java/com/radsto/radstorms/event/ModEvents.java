@@ -4,6 +4,8 @@ import com.radsto.radstorms.RadStormsMod;
 import com.radsto.radstorms.capability.PlayerRadiation;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -46,14 +48,37 @@ public class ModEvents {
 
                     if (playerY > safeZoneY) {
                         player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                            radiation.addRadiation(0.5f);
+                            radiation.addRadiation(0.08f);
+                            float radPercentage = radiation.getRadiationByPercentage();
 
                             RadStormsMod.LOGGER.info("The player is being irradiated! Current radiation level: " + radiation.getRadiation());
-                            if (radiation.isMax()) {
+                            RadStormsMod.LOGGER.info("Current radiation level by percentage: " + radiation.getRadiationByPercentage() + "%");
+
+                            if (radPercentage >= 5 && radPercentage <= 50) {
+                                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 30, 0, false, true));
+                            }
+                            if (radPercentage >= 20) {
+                                player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 30, 5, false, true));
                                 player.hurt(level.damageSources().magic(), 1.0f);
+                            }
+                            if (radPercentage >= 50 && radPercentage <= 80) {
+                                player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 30, 2, false, true));
+                                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 30, 1, false, true));
+                                player.hurt(level.damageSources().magic(), 2.5f);
+                            }
+                            if (radPercentage >= 80) {
+                                player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 30, 1, false, true));
+                                player.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 30, 2, false, true));
+                                player.hurt(level.damageSources().magic(), 4.3f);
                             }
                         });
                     }
+                } else {
+                    player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                        radiation.subRadiation(0.06f);
+
+                        RadStormsMod.LOGGER.info("The player is being subradiated: " + radiation.getRadiationByPercentage() + "%");
+                    });
                 }
             }
         }

@@ -10,6 +10,10 @@ public class PlayerRadiation {
         return this.radiation;
     }
 
+    public float getRadiationByPercentage() {
+        return (radiation / MAX_RADIATION) * 100;
+    }
+
     public void setRadiation(float value) {
         this.radiation = Math.max(0.0f, Math.min(value, MAX_RADIATION));
     }
