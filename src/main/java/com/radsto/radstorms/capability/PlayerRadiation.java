@@ -6,13 +6,9 @@ public class PlayerRadiation {
     private float radiation = 0.0f;
     private final float MAX_RADIATION = 100.0f;
 
-    public float getRadiation() {
-        return this.radiation;
-    }
+    public float getRadiation() { return this.radiation; }
 
-    public float getRadiationByPercentage() {
-        return (radiation / MAX_RADIATION) * 100;
-    }
+    public float getRadiationByPercentage() { return (radiation / MAX_RADIATION) * 100; }
 
     public void setRadiation(float value) {
         this.radiation = Math.max(0.0f, Math.min(value, MAX_RADIATION));
@@ -25,6 +21,8 @@ public class PlayerRadiation {
     public void subRadiation(float value) {
         setRadiation(this.radiation - value);
     }
+
+    public void clearRadiation() { this.setRadiation(0.0f); }
 
     public boolean isMax() {
         return this.radiation >= MAX_RADIATION;
