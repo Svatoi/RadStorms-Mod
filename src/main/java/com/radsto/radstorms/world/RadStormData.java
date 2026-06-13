@@ -1,4 +1,4 @@
-package com.radsto.radstorms.word;
+package com.radsto.radstorms.world;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;

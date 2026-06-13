@@ -4,12 +4,16 @@ import com.radsto.radstorms.RadStormsMod;
 import com.radsto.radstorms.capability.PlayerRadiation;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
 import com.radsto.radstorms.command.RadiationCommand;
-import com.radsto.radstorms.word.RadStormData;
+import com.radsto.radstorms.world.RadStormData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -18,6 +22,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.TickEvent.PlayerTickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -36,25 +41,25 @@ public class ModEvents {
             }
         }
     }
+
     @SubscribeEvent
-    public static void onPlayerTick(PlayerTickEvent event) {
-        if(event.side.isServer() && event.phase == TickEvent.Phase.END) {
-            Player player = event.player;
-            Level level = player.level();
+    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+        LivingEntity entity = event.getEntity();
+        Level level = entity.level();
 
-            if (player.tickCount % 10 == 0) {
-                if (RadStormData.get((ServerLevel) level).isActive() || level.isRaining() || level.isThundering()) {
-                    int playerY = player.blockPosition().getY();
-                    int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, player.blockPosition().getX(), player.blockPosition().getZ());
+        if(!level.isClientSide() && entity.tickCount % 10 == 0) {
+            ServerLevel serverLevel = (ServerLevel) level;
+            boolean isStormActive = RadStormData.get(serverLevel).isActive();
 
-                    int maxPenetration = 15;
-                    int safeZoneY = surfaceY - maxPenetration;
+            int entityY = entity.blockPosition().getY();
+            int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, entity.blockPosition().getX(), entity.blockPosition().getZ());
 
-                    if (playerY > safeZoneY) {
+            if (entity instanceof Player player) {
+                if (isStormActive && (level.isRaining() || level.isThundering())) {
+                    if (entityY > surfaceY - 15) {
                         player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                            radiation.addRadiation(5f);
+                            radiation.addRadiation(5f); // for realis 0.3
                             float radPercentage = radiation.getRadiationByPercentage();
-
                             applyRadiationStage(player, radPercentage, level);
                         });
                     }
@@ -65,6 +70,14 @@ public class ModEvents {
                             RadStormsMod.LOGGER.info("The player is being subradiated: " + radiation.getRadiationByPercentage() + "%");
                         }
                     });
+                }
+            } else {
+                if (isStormActive && (level.isRaining() || level.isThundering())) {
+                    if (entityY > surfaceY - 15) {
+                        if (entity.getMobType() != MobType.UNDEAD && !(entity instanceof Enemy)) {
+                            entity.hurt(level.damageSources().magic(), 0.5f);
+                        }
+                    }
                 }
             }
         }

@@ -2,10 +2,9 @@ package com.radsto.radstorms.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.radsto.radstorms.RadStormsMod;
 import com.radsto.radstorms.capability.PlayerRadiation;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
-import com.radsto.radstorms.word.RadStormData;
+import com.radsto.radstorms.world.RadStormData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
