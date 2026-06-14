@@ -4,6 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.radsto.radstorms.capability.PlayerRadiation;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
+import com.radsto.radstorms.network.ModMessages;
+import com.radsto.radstorms.network.PacketSyncWeather;
 import com.radsto.radstorms.world.RadStormData;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -33,6 +35,9 @@ public class RadiationCommand {
 
                                     ServerLevel serverLevel = context.getSource().getLevel();
                                     RadStormData.get(serverLevel).setRadStormActive(isActive);
+
+                                    RadStormData.get(serverLevel).setRadStormActive(isActive);
+                                    ModMessages.sendToAllPlayers(new PacketSyncWeather(isActive));
 
                                     context.getSource().sendSuccess(() -> Component.literal("The radiation storm is set to active: " + isActive), true);
 

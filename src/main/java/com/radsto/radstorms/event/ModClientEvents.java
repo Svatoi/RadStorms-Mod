@@ -13,6 +13,8 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = RadStormsMod.MOD_ID, value = Dist.CLIENT)
 public class ModClientEvents {
+    public static boolean isClientStormActive = false;
+
     @SubscribeEvent
     public static void onRenderFog(ViewportEvent.RenderFog event) {
         Minecraft mc = Minecraft.getInstance();
@@ -25,7 +27,7 @@ public class ModClientEvents {
 
         boolean isRaining = level.isRaining() || level.isThundering();
 
-        if (isRaining) {
+        if (isRaining && isClientStormActive) {
             int playerY = pos.getY();
             int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
 

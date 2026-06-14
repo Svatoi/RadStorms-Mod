@@ -1,6 +1,7 @@
 package com.radsto.radstorms;
 
 import com.mojang.logging.LogUtils;
+import com.radsto.radstorms.network.ModMessages;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -19,6 +20,8 @@ public class RadStormsMod {
         IEventBus modEventBus = context.getModEventBus();
 
         GeckoLib.initialize();
+
+        ModMessages.register();
 
         modEventBus.addListener(this::commonSetup);
 
