@@ -66,7 +66,7 @@ public class ModEvents {
             boolean underStorm = isStormActive && isRaining && level.isRainingAt(pos);
             boolean underSun = isStormActive && isDay && level.canSeeSky(pos) && !isRaining;
 
-            RadStormsMod.LOGGER.info("isRaining " + isRaining + " | isRainingAt: " + level.isRainingAt(pos));
+//            RadStormsMod.LOGGER.info("isRaining " + isRaining + " | isRainingAt: " + level.isRainingAt(pos));
 
             if (underStorm || underSun) {
                 int entityY = pos.getY();
