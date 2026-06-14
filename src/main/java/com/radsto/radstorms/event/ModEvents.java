@@ -5,6 +5,7 @@ import com.radsto.radstorms.capability.PlayerRadiation;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
 import com.radsto.radstorms.command.RadiationCommand;
 import com.radsto.radstorms.world.RadStormData;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -47,45 +48,61 @@ public class ModEvents {
         LivingEntity entity = event.getEntity();
         Level level = entity.level();
 
-        if(!level.isClientSide() && entity.tickCount % 10 == 0) {
-            ServerLevel serverLevel = (ServerLevel) level;
-            boolean isStormActive = RadStormData.get(serverLevel).isActive();
+        if(level.isClientSide() || entity.tickCount % 10 != 0) return;
 
-            int entityY = entity.blockPosition().getY();
-            int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, entity.blockPosition().getX(), entity.blockPosition().getZ());
+        ServerLevel serverLevel = (ServerLevel) level;
+        boolean isStormActive = RadStormData.get(serverLevel).isActive();
 
-            float radDamage = 0.5f; // for realise 0.5f
+        // vanilla weather
+        boolean isRaining = level.isRaining() || level.isThundering();
+        boolean isDay = level.isDay();
 
-            if (entity instanceof Player player) {
-                if (isStormActive && (level.isRaining() || level.isThundering() ||
-                                (level.isDay() && level.canSeeSky(player.blockPosition())))) {
-                    if (entityY > surfaceY - 15) {
-                        if (level.isDay() && level.canSeeSky(player.blockPosition())) {
-                            radDamage = 0.3f;
-                        }
+        BlockPos pos = entity.blockPosition();
 
-                        float finalRadDamage = radDamage;
-                        player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                            radiation.addRadiation(finalRadDamage); // for realis 0.3
-                            float radPercentage = radiation.getRadiationByPercentage();
-                            applyRadiationStage(player, radPercentage, level);
+        if (entity instanceof Player player) {
+            // Logic for player
+            // Either there's an active storm rain right on the player (isRainingAt)
+            // Or it's a clear day (storm is active) and the player is out in the open sun (canSeeSky)
+            boolean underStorm = isStormActive && isRaining && level.isRainingAt(pos);
+            boolean underSun = isStormActive && isDay && level.canSeeSky(pos) && !isRaining;
+
+            RadStormsMod.LOGGER.info("isRaining " + isRaining + " | isRainingAt: " + level.isRainingAt(pos));
+
+            if (underStorm || underSun) {
+                int entityY = pos.getY();
+                int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
+
+                if (entityY > surfaceY - 15) {
+                    // If the sun is blazing — damage is less (0.3f), if there's a storm — it's more (0.5f)
+                    float finalRadDamage = underSun ? 5f : 10f; // for realis 5f -> 0.3f, 10f -> 0.5f
+
+                    player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                        radiation.addRadiation(finalRadDamage);
+                        applyRadiationStage(player, radiation.getRadiationByPercentage(), level);
                         });
-                    } else if (entityY < surfaceY + 15) {
-                        subRadiationStage(player, level);
+                        return;
                     }
-                } else {
-                    subRadiationStage(player, level);
                 }
+                // If player didn't get exposed (night, in the mine, under the roof) gradually cleaning
+                subRadiationStage(player, level);
             } else {
-                if (isStormActive && (level.isRaining() || level.isThundering() ||
-                        (level.isDay() && level.canSeeSky(entity.blockPosition())))) {
+                // Logic for mobs
+                // get rained on during a storm if they’re not under a roof (isRainingAt)
+                // Or get sunlight on a clear stormy day (canSeeSky)
+
+                boolean mobUnderStorm = isStormActive && isRaining && level.isRainingAt(pos);
+                boolean mobUnderSun = isStormActive && isDay && level.canSeeSky(pos) && !isRaining;
+
+                if (mobUnderStorm || mobUnderSun) {
+                    int entityY = pos.getY();
+                    int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
+
                     if (entityY > surfaceY - 15) {
                         if (entity.getMobType() != MobType.UNDEAD && !(entity instanceof Enemy)) {
                             entity.hurt(level.damageSources().magic(), 0.5f);
                         }
                     }
                 }
-            }
         }
     }
 
