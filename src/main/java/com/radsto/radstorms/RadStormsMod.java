@@ -20,10 +20,8 @@ public class RadStormsMod {
 
         GeckoLib.initialize();
 
-//        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, RadStormsConfig.SPEC);
         modEventBus.addListener(this::commonSetup);
 
-        // Регистрируем наш главный класс в шине событий Forge
         MinecraftForge.EVENT_BUS.register(this);
     }
 

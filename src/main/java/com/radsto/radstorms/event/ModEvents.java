@@ -54,25 +54,31 @@ public class ModEvents {
             int entityY = entity.blockPosition().getY();
             int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, entity.blockPosition().getX(), entity.blockPosition().getZ());
 
+            float radDamage = 0.5f; // for realise 0.5f
+
             if (entity instanceof Player player) {
-                if (isStormActive && (level.isRaining() || level.isThundering())) {
+                if (isStormActive && (level.isRaining() || level.isThundering() ||
+                                (level.isDay() && level.canSeeSky(player.blockPosition())))) {
                     if (entityY > surfaceY - 15) {
+                        if (level.isDay() && level.canSeeSky(player.blockPosition())) {
+                            radDamage = 0.3f;
+                        }
+
+                        float finalRadDamage = radDamage;
                         player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                            radiation.addRadiation(5f); // for realis 0.3
+                            radiation.addRadiation(finalRadDamage); // for realis 0.3
                             float radPercentage = radiation.getRadiationByPercentage();
                             applyRadiationStage(player, radPercentage, level);
                         });
+                    } else if (entityY < surfaceY + 15) {
+                        subRadiationStage(player, level);
                     }
                 } else {
-                    player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                        if (radiation.getRadiation() != 0) {
-                            radiation.subRadiation(0.06f);
-                            RadStormsMod.LOGGER.info("The player is being subradiated: " + radiation.getRadiationByPercentage() + "%");
-                        }
-                    });
+                    subRadiationStage(player, level);
                 }
             } else {
-                if (isStormActive && (level.isRaining() || level.isThundering())) {
+                if (isStormActive && (level.isRaining() || level.isThundering() ||
+                        (level.isDay() && level.canSeeSky(entity.blockPosition())))) {
                     if (entityY > surfaceY - 15) {
                         if (entity.getMobType() != MobType.UNDEAD && !(entity instanceof Enemy)) {
                             entity.hurt(level.damageSources().magic(), 0.5f);
@@ -86,6 +92,18 @@ public class ModEvents {
     @SubscribeEvent
     public static void onCommandsRegister(RegisterCommandsEvent event) {
         RadiationCommand.register(event.getDispatcher());
+    }
+
+    private static void subRadiationStage(Player player, Level level) {
+        player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+            if (radiation.getRadiation() != 0) {
+                radiation.subRadiation(0.06f);
+                RadStormsMod.LOGGER.info("The player is being subradiated: " + radiation.getRadiationByPercentage() + "%");
+
+                float radPercentage = radiation.getRadiationByPercentage();
+                applyRadiationStage(player, radPercentage, level);
+            }
+        });
     }
 
     private static void applyRadiationStage(Player player, float radPercentage, Level level) {
