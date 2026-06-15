@@ -82,6 +82,9 @@ public class RadiationCommand {
             } else if (targetStorm == StormType.NUCLEAR_BLOWOUT) {
                 level.setWeatherParameters(0, 0, true, true);
                 source.sendSuccess(() -> Component.literal("§4Запущен ядерный выброс!§r"), true);
+            } else if (targetStorm == StormType.SUPER_SOLAR_APOCALYPSE) {
+                level.setWeatherParameters(24000, 0, true, true);
+                source.sendSuccess(() -> Component.literal("§4§lАПОКАЛИПСИС: Солнце выжигает этот мир!§r"), true);
             }
 
             ModMessages.sendToAllPlayers(new PacketSyncWeather(targetStorm.getId()));

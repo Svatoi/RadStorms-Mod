@@ -16,7 +16,7 @@ public class RadStormDirector {
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        if (event.level.isClientSide() || event.phase == TickEvent.Phase.END) return;
+        if (event.level.isClientSide() || event.phase != TickEvent.Phase.END) return;
 
         ServerLevel level = (ServerLevel) event.level;
 
@@ -33,10 +33,13 @@ public class RadStormDirector {
 
         if (data.isActive()) {
             data.setStormType(StormType.NONE);
-            data.setDaysUntilNextStorm(random.nextInt(7));
+
+            int cooldownDays = 1 + random.nextInt(7);
+            data.setDaysUntilNextStorm(cooldownDays);
 
             level.setWeatherParameters(0, 0, false, false);
             ModMessages.sendToAllPlayers(new PacketSyncWeather(StormType.NONE.getId()));
+
             level.players().forEach(player -> player.sendSystemMessage(
                     Component.literal("§aАтмосфера стабилизировалась. Шторм утих, затишье...§r")
             ));
@@ -64,16 +67,22 @@ public class RadStormDirector {
             } else if (eventRoll < 0.85f) {
                 data.setStormType(StormType.SOLAR_FLARE);
 
-                level.setWeatherParameters(24000, 0, true, false);
+                level.setWeatherParameters(24000, 0, false, false);
 
                 level.players().forEach(player -> player.sendSystemMessage(
                         Component.literal("§c[Внимание]: Зафиксирована мощная вспышка на Солнце! Уровень УФ-излучения критический!§r")
                 ));
-            } else {
+            } else if (eventRoll < 0.95f) {
                 data.setStormType(StormType.NUCLEAR_BLOWOUT);
                 level.setWeatherParameters(0, 24000, true, true);
                 level.players().forEach(player -> player.sendSystemMessage(
                         Component.literal("§4[КАТАСТРОФА]: Датчики зашкаливают! К миру приближается Ядерный Выброс! Срочно ищите глубокое укрытие!§r")
+                ));
+            } else {
+                data.setStormType(StormType.SUPER_SOLAR_APOCALYPSE);
+                level.setWeatherParameters(0, 24000, false, false);
+                level.players().forEach(player -> player.sendSystemMessage(
+                        Component.literal("§4§l[АПОКАЛИПСИС]: Уровень УФ-излучения достигла критического пика! CОЛНЦЕ ВЫЖЫГАЕТ ЗЕМЛЮ!§r")
                 ));
             }
             ModMessages.sendToAllPlayers(new PacketSyncWeather(data.getCurrentStorm().getId()));

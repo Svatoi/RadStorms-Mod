@@ -4,7 +4,8 @@ public enum StormType {
     NONE(0),
     RAD_RAIN(1),
     SOLAR_FLARE(2),
-    NUCLEAR_BLOWOUT(3);
+    NUCLEAR_BLOWOUT(3),
+    SUPER_SOLAR_APOCALYPSE(4);
 
     private final int id;
 
