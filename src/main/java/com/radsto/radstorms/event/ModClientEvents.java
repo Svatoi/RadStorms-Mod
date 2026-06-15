@@ -1,6 +1,7 @@
 package com.radsto.radstorms.event;
 
 import com.radsto.radstorms.RadStormsMod;
+import com.radsto.radstorms.world.StormType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -13,7 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = RadStormsMod.MOD_ID, value = Dist.CLIENT)
 public class ModClientEvents {
-    public static boolean isClientStormActive = false;
+    public static StormType clientStormType = StormType.NONE;
 
     @SubscribeEvent
     public static void onRenderFog(ViewportEvent.RenderFog event) {
@@ -21,33 +22,42 @@ public class ModClientEvents {
         ClientLevel level = mc.level;
         Player player = mc.player;
 
-        if (level == null) return;
+        if (level == null || player == null) return;
 
         BlockPos pos = player.blockPosition();
-
         boolean isRaining = level.isRaining() || level.isThundering();
 
-        if (isRaining && isClientStormActive) {
+        if (isRaining && (clientStormType == StormType.RAD_RAIN || clientStormType == StormType.NUCLEAR_BLOWOUT)) {
             int playerY = pos.getY();
             int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
 
             int fadeStart = surfaceY;
             int fadeEnd = surfaceY - 15;
 
+            float nearDist = 1.3f;
+            float farDist = 22f;
+
+            if(clientStormType == StormType.NUCLEAR_BLOWOUT) {
+                nearDist = 0.5f;
+                farDist = 8f;
+            }
+
             if (playerY >= fadeStart) {
-                event.setNearPlaneDistance(1.3f);
-                event.setFarPlaneDistance(22f);
+                event.setNearPlaneDistance(nearDist);
+                event.setFarPlaneDistance(farDist);
                 event.setCanceled(true);
-            } else if (playerY > fadeEnd) {
+            }
+            else if (playerY > fadeEnd) {
                 float totalDistance = fadeStart - fadeEnd;
                 float playerDistance = fadeStart - playerY;
                 float depthFactor = playerDistance / totalDistance;
 
                 float startFar = 22f;
-                float endFar = 25f;
+                float endFar = 180f;
                 float currentFar = startFar + (endFar - startFar) * depthFactor;
 
-                float currentNear = 1.5f + (8f - 1.3f) * depthFactor;
+                float currentNear = nearDist + (8f - nearDist) * depthFactor;
+
                 event.setNearPlaneDistance(currentNear);
                 event.setFarPlaneDistance(currentFar);
                 event.setCanceled(true);
@@ -61,23 +71,30 @@ public class ModClientEvents {
         ClientLevel level = mc.level;
         Player player = mc.player;
 
-        if (level == null) return;
+        if (level == null || player == null) return;
 
         BlockPos pos = player.blockPosition();
-
         boolean isRaining = level.isRaining() || level.isThundering();
 
-        if (isRaining && isClientStormActive) {
+        if (isRaining && (clientStormType == StormType.RAD_RAIN || clientStormType == StormType.NUCLEAR_BLOWOUT)) {
             int playerY = pos.getY();
             int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
 
             int fadeStart = surfaceY;
             int fadeEnd = surfaceY - 15;
 
+            float r = 0.45f, g = 0.45f, b = 0.45f;
+
+            if (clientStormType == StormType.NUCLEAR_BLOWOUT) {
+                r = 0.6f;
+                g = 0.1f;
+                b = 0.1f;
+            }
+
             if (playerY > surfaceY - 10) {
-                event.setRed(0.45f);
-                event.setGreen(0.45f);
-                event.setBlue(0.45f);
+                event.setRed(r);
+                event.setGreen(g);
+                event.setBlue(b);
             } else if (playerY > fadeEnd) {
                 float totalDistance = fadeStart - fadeEnd;
                 float playerDistance = fadeStart - playerY;
