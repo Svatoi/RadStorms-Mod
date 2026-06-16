@@ -32,16 +32,16 @@ public class RadStormDirector {
         RandomSource random = level.getRandom();
 
         if (data.isActive()) {
-            data.setStormType(StormType.NONE);
+            data.setStormType(StormType.RAD_CONTAMINATION);
+
+            level.setWeatherParameters(0, 0, false, false);
+            ModMessages.sendToAllPlayers(new PacketSyncWeather(StormType.RAD_CONTAMINATION.getId()));
 
             int cooldownDays = 1 + random.nextInt(7);
             data.setDaysUntilNextStorm(cooldownDays);
 
-            level.setWeatherParameters(0, 0, false, false);
-            ModMessages.sendToAllPlayers(new PacketSyncWeather(StormType.NONE.getId()));
-
             level.players().forEach(player -> player.sendSystemMessage(
-                    Component.literal("§aАтмосфера стабилизировалась. Шторм утих, затишье...§r")
+                    Component.literal("§aШторм утих, остатки радиации витают в воздухе...§r")
             ));
             return;
         }
@@ -78,11 +78,17 @@ public class RadStormDirector {
                 level.players().forEach(player -> player.sendSystemMessage(
                         Component.literal("§4[КАТАСТРОФА]: Датчики зашкаливают! К миру приближается Ядерный Выброс! Срочно ищите глубокое укрытие!§r")
                 ));
-            } else {
+            } else if (eventRoll < 1f) {
                 data.setStormType(StormType.SUPER_SOLAR_APOCALYPSE);
-                level.setWeatherParameters(0, 24000, false, false);
+                level.setWeatherParameters(24000, 0, false, false);
                 level.players().forEach(player -> player.sendSystemMessage(
                         Component.literal("§4§l[АПОКАЛИПСИС]: Уровень УФ-излучения достигла критического пика! CОЛНЦЕ ВЫЖЫГАЕТ ЗЕМЛЮ!§r")
+                ));
+            } else {
+                data.setStormType(StormType.RAD_CONTAMINATION);
+                level.setWeatherParameters(24000, 0, false, false);
+                level.players().forEach(player -> player.sendSystemMessage(
+                        Component.literal("§6Глобальное радиационное заражение!§r")
                 ));
             }
             ModMessages.sendToAllPlayers(new PacketSyncWeather(data.getCurrentStorm().getId()));

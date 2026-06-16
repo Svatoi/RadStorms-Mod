@@ -6,9 +6,12 @@ import com.radsto.radstorms.event.ModEvents;
 import com.radsto.radstorms.world.RadStormData;
 import com.radsto.radstorms.world.StormType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,34 +42,42 @@ public class WeatherEventHandler {
 
         if (currentStorm == StormType.NONE) return;
 
-        // vanilla weather
-        boolean isRaining = level.isRaining() || level.isThundering();
-        boolean isDay = level.isDay();
         BlockPos pos = entity.blockPosition();
+        int entityY = pos.getY();
+        int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
+
+        boolean isInDangerZone = entityY > surfaceY - 15;
 
         if (entity instanceof Player player) {
             // Logic for player
             // Either there's an active storm rain right on the player (isRainingAt)
             // Or it's a clear day (storm is active) and the player is out in the open sun (canSeeSky)
+
+            // vanilla weather
+            boolean isRaining = level.isRaining() || level.isThundering();
+            boolean isDay = level.isDay();
+
             boolean underStorm = (currentStorm == StormType.RAD_RAIN || currentStorm == StormType.NUCLEAR_BLOWOUT) && isRaining && level.isRainingAt(pos);
             boolean underSun = (currentStorm == StormType.SOLAR_FLARE || currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) && isDay && level.canSeeSky(pos) && !isRaining;
 
-//            RadStormsMod.LOGGER.info("isRaining " + isRaining + " | isRainingAt: " + level.isRainingAt(pos));
+            boolean underPassiveContamination = (currentStorm == StormType.RAD_CONTAMINATION) && isInDangerZone;
 
-            if (underStorm || underSun) {
-                int entityY = pos.getY();
-                int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
+            if (underStorm || underSun || underPassiveContamination) {
+                // If the sun is blazing — damage is less (0.3f), if there's a storm — it's more (0.5f)
+                float RadDamage = 0.3f; // for realis 5f -> 0.3f, 10f -> 0.5f
 
-                if (entityY > surfaceY - 15) {
-                    // If the sun is blazing — damage is less (0.3f), if there's a storm — it's more (0.5f)
-                    float finalRadDamage = underSun ? 5f : 10f; // for realis 5f -> 0.3f, 10f -> 0.5f
+                if (currentStorm == StormType.SOLAR_FLARE) RadDamage = 0.5f;
+                if (currentStorm == StormType.RAD_RAIN) RadDamage = 0.8f;
+                if (currentStorm == StormType.NUCLEAR_BLOWOUT) RadDamage = 1.3f;
+                if (currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) RadDamage = 2.6f;
+                    
+                final float finalRadDamage = RadDamage;
 
-                    player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                        radiation.addRadiation(finalRadDamage);
-                        ModEvents.applyRadiationStage(player, radiation.getRadiationByPercentage(), level);
-                    });
-                    return;
-                }
+                player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                    radiation.addRadiation(finalRadDamage);
+                    ModEvents.applyRadiationStage(player, radiation.getRadiationByPercentage(), level);
+                });
+                return;
             }
             // If player didn't get exposed (night, in the mine, under the roof) gradually cleaning
             ModEvents.subRadiationStage(player, level);
@@ -74,22 +85,39 @@ public class WeatherEventHandler {
             // Logic for mobs
             // get rained on during a storm if they’re not under a roof (isRainingAt)
             // Or get sunlight on a clear stormy day (canSeeSky)
+            float finalMobRadDamage = 0.3f;
 
             boolean mobUnderStorm = (
                     currentStorm == StormType.RAD_RAIN ||
-                        currentStorm == StormType.NUCLEAR_BLOWOUT) && isRaining && level.isRainingAt(pos);
-
+                            currentStorm == StormType.NUCLEAR_BLOWOUT) && level.isRaining() && level.isRainingAt(pos);
             boolean mobUnderSun = (
                     currentStorm == StormType.SOLAR_FLARE ||
-                            currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) && isDay && level.canSeeSky(pos) && !isRaining;
+                            currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) && level.isDay() && level.canSeeSky(pos) && !level.isRaining();
 
+            if(isInDangerZone) {
+                if (currentStorm == StormType.SOLAR_FLARE) finalMobRadDamage = 0.5f;
+                if (currentStorm == StormType.RAD_RAIN) finalMobRadDamage = 0.8f;
+                if (currentStorm == StormType.NUCLEAR_BLOWOUT) finalMobRadDamage = 1.3f;
+                if (currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) finalMobRadDamage = 2.6f;
 
-            if (mobUnderStorm || mobUnderSun) {
-                int entityY = pos.getY();
-                int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
-                if (entityY > surfaceY - 15) {
+                if (currentStorm == StormType.NUCLEAR_BLOWOUT && entity instanceof Enemy) {
+                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 1, false, false));
+                    entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 40, 0, false, false));
+                    entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 40, 1, false, false));
+
+                    if (serverLevel.getRandom().nextFloat() < 0.1f) {
+                        serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER,
+                                entity.getX(), entity.getY() + 1.0D, entity.getZ(), 1, 0.2, 0.2, 0.2, 0.0);
+                    }
+                }
+
+                if (mobUnderSun || (currentStorm == StormType.RAD_CONTAMINATION)) {
                     if (entity.getMobType() != MobType.UNDEAD && !(entity instanceof Enemy)) {
-                        entity.hurt(level.damageSources().magic(), 0.5f);
+                        entity.hurt(level.damageSources().magic(), finalMobRadDamage);
+                    }
+                } else if (mobUnderStorm && level.isRainingAt(pos)) {
+                    if (entity.getMobType() != MobType.UNDEAD && !(entity instanceof Enemy)) {
+                        entity.hurt(level.damageSources().magic(), finalMobRadDamage);
                     }
                 }
             }
@@ -132,8 +160,8 @@ public class WeatherEventHandler {
                     BlockPos playerPos = player.blockPosition();
 
                     for (int i = 0; i < 5; i++) {
-                        int offsetX = random.nextInt(80) - 60;
-                        int offsetZ = random.nextInt(80) - 60;
+                        int offsetX = random.nextInt(80) - 40;
+                        int offsetZ = random.nextInt(80) - 40;
 
                         BlockPos surfacePos = level.getHeightmapPos(Heightmap.Types.WORLD_SURFACE, playerPos.offset(offsetX, 0, offsetZ));
                         BlockPos blockToBurn = surfacePos.below();

@@ -71,7 +71,13 @@ public class RadiationCommand {
             data.setStormType(targetStorm);
 
             if (targetStorm == StormType.NONE) {
+                data.setStormType(StormType.NONE);
+
+                data.setDaysUntilNextStorm(99);
+
                 level.setWeatherParameters(0, 0, false, false);
+                ModMessages.sendToAllPlayers(new PacketSyncWeather(StormType.NONE.getId()));
+
                 source.sendSuccess(() -> Component.literal("§aПогода очищена. Все штормы выключены.§r"), true);
             } else if (targetStorm == StormType.RAD_RAIN) {
                 level.setWeatherParameters(0, 24000, true, false);
@@ -81,10 +87,13 @@ public class RadiationCommand {
                 source.sendSuccess(() -> Component.literal("§cВключена солнечная вспышка!§r"), true);
             } else if (targetStorm == StormType.NUCLEAR_BLOWOUT) {
                 level.setWeatherParameters(0, 0, true, true);
-                source.sendSuccess(() -> Component.literal("§4Запущен ядерный выброс!§r"), true);
+                source.sendSuccess(() -> Component.literal("§4Запущен ядерный выброс! Мобы мутируют!§r"), true);
             } else if (targetStorm == StormType.SUPER_SOLAR_APOCALYPSE) {
                 level.setWeatherParameters(24000, 0, true, true);
                 source.sendSuccess(() -> Component.literal("§4§lАПОКАЛИПСИС: Солнце выжигает этот мир!§r"), true);
+            } else if (targetStorm == StormType.RAD_CONTAMINATION) {
+                level.setWeatherParameters(24000, 0, false, false);
+                source.sendSuccess(() -> Component.literal("§6Глобальное радиационное заражение!§r"), true);
             }
 
             ModMessages.sendToAllPlayers(new PacketSyncWeather(targetStorm.getId()));
