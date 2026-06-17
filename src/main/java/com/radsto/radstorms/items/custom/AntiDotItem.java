@@ -18,6 +18,7 @@ public class AntiDotItem extends Item {
         if(!pLevel.isClientSide()) {
             if (pLivingEntity instanceof Player player) {
                 player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                    player.hurt(pLevel.damageSources().magic(), 3f);
                     ModEvents.subRadiationStage(player, pLevel, 20f);
                 });
             }
