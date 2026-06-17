@@ -67,10 +67,10 @@ public class ModEvents {
         RadiationCommand.register(event.getDispatcher());
     }
 
-    public static void subRadiationStage(Player player, Level level) {
+    public static void subRadiationStage(Player player, Level level, float subRad) {
         player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
             if (radiation.getRadiation() != 0) {
-                radiation.subRadiation(0.06f);
+                radiation.subRadiation(subRad);
                 RadStormsMod.LOGGER.info("The player is being subradiated: " + radiation.getRadiationByPercentage() + "%");
 
                 float radPercentage = radiation.getRadiationByPercentage();

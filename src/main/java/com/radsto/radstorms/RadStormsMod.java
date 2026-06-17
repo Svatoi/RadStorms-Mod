@@ -1,6 +1,8 @@
 package com.radsto.radstorms;
 
 import com.mojang.logging.LogUtils;
+import com.radsto.radstorms.items.ModCreativeModTabs;
+import com.radsto.radstorms.items.ModItems;
 import com.radsto.radstorms.network.ModMessages;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -18,6 +20,10 @@ public class RadStormsMod {
 
     public RadStormsMod(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
+
+        ModCreativeModTabs.register(modEventBus);
+
+        ModItems.ITEMS.register(modEventBus);
 
         GeckoLib.initialize();
 

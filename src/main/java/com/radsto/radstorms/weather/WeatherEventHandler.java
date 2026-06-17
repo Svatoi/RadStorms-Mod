@@ -80,7 +80,7 @@ public class WeatherEventHandler {
                 return;
             }
             // If player didn't get exposed (night, in the mine, under the roof) gradually cleaning
-            ModEvents.subRadiationStage(player, level);
+            ModEvents.subRadiationStage(player, level, 0.06f);
         } else {
             // Logic for mobs
             // get rained on during a storm if they’re not under a roof (isRainingAt)
