@@ -52,15 +52,18 @@ public class RadiationCommand {
                         )
                 )
                 .then(Commands.literal("rad_score")
+                        .then(Commands.argument("targets", EntityArgument.players())
                         .executes(context -> {
-                            ServerPlayer player = context.getSource().getPlayerOrException();
+                            Collection<ServerPlayer> targets = EntityArgument.getPlayers(context, "targets");
 
-                            player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                                context.getSource().sendSuccess(() -> Component.literal("Current radiation level: " + radiation.getRadiation() + " / " + radiation.getRadiationByPercentage() + "%"), true);
-                            });
+                            for (ServerPlayer target : targets) {
+                                target.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                                    context.getSource().sendSuccess(() -> Component.literal("Current radiation level: " + radiation.getRadiation() + " / " + radiation.getRadiationByPercentage() + "%"), true);
+                                });
+                            }
 
                             return 1;
-                        })
+                        }))
                 )
                 .then(Commands.literal("add_rad")
                         .then(Commands.argument("targets", EntityArgument.players())

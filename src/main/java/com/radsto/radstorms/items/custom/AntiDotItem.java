@@ -17,12 +17,11 @@ public class AntiDotItem extends Item {
     @Override
     public ItemStack finishUsingItem(ItemStack pStack, Level pLevel, LivingEntity pLivingEntity) {
         if(!pLevel.isClientSide()) {
-            if (pLivingEntity instanceof Player player && !player.getAbilities().instabuild) {
+            if (pLivingEntity instanceof Player player) {
                 player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
                     player.hurt(pLevel.damageSources().magic(), 3f);
                     ModEvents.subRadiationStage(player, pLevel, 20f);
                 });
-
                 if (!player.getAbilities().instabuild) {
                     ItemStack emptySyringe = new ItemStack(ModItems.EMPTY_ANTIDOT.get());
 
