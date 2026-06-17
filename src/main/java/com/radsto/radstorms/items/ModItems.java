@@ -15,6 +15,8 @@ public class ModItems {
 
     public static final RegistryObject<Item> ANTIDOT = ITEMS.register("antidot",
             () -> new AntiDotItem(new Item.Properties().food(AntiDotFood.ANTIDOT)));
+    public static final RegistryObject<Item> EMPTY_ANTIDOT = ITEMS.register("empty_antidot",
+            () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);

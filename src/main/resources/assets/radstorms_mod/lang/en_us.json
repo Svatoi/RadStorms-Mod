@@ -1,3 +1,6 @@
 {
-  "item.radstorms_mod.antidot": "Anti-dot"
+  "item.radstorms_mod.antidot": "Anti-dot",
+  "item.radstorms_mod.empty_antidot": "Empty Anti-dot",
+
+  "creativetab.radstorm_mod": "RadStorms"
 }

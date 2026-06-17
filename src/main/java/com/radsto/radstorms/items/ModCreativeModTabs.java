@@ -16,9 +16,10 @@ public class ModCreativeModTabs {
 
     public static final RegistryObject<CreativeModeTab> RADSTORM_TAB = CREATIVE_MODE_TABS.register("radstorm_tab",
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(ModItems.ANTIDOT.get()))
-                    .title(Component.translatable("creativetab.tutorial_tab"))
+                    .title(Component.translatable("creativetab.radstorm_tab"))
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.ANTIDOT.get());
+                        pOutput.accept(ModItems.EMPTY_ANTIDOT.get());
                     })
                     .build());
 
