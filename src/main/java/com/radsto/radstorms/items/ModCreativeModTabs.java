@@ -20,6 +20,8 @@ public class ModCreativeModTabs {
                     .displayItems((pParameters, pOutput) -> {
                         pOutput.accept(ModItems.ANTIDOT.get());
                         pOutput.accept(ModItems.EMPTY_ANTIDOT.get());
+
+                        pOutput.accept(ModItems.GAS_MASK.get());
                     })
                     .build());
 
