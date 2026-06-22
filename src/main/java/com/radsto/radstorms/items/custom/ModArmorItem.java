@@ -31,7 +31,7 @@ public class ModArmorItem extends ArmorItem {
             if (MATERIAL_TO_EFFECT_MAP.containsKey(material)) {
                 if (material == ModArmorMaterials.GAS_MASK) {
                     if (isWearingGasMask(player)) {
-                        addStatusEffect(player, MATERIAL_TO_EFFECT_MAP.get(material))
+                        addStatusEffect(player, MATERIAL_TO_EFFECT_MAP.get(material));
                     }
                 }
                 else if (hasFullSuitOfCorrectArmor(player, material)) {

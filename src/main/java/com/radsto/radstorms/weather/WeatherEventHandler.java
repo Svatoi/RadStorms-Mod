@@ -3,21 +3,23 @@ package com.radsto.radstorms.weather;
 import com.radsto.radstorms.RadStormsMod;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
 import com.radsto.radstorms.event.ModEvents;
+import com.radsto.radstorms.items.ModArmorMaterials;
+import com.radsto.radstorms.items.custom.ModArmorItem;
 import com.radsto.radstorms.world.RadStormData;
 import com.radsto.radstorms.world.StormType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -62,6 +64,8 @@ public class WeatherEventHandler {
 
             boolean underPassiveContamination = (currentStorm == StormType.RAD_CONTAMINATION) && isInDangerZone;
 
+            ItemStack helmet = player.getInventory().getArmor(3);
+
             if (underStorm || underSun || underPassiveContamination) {
                 // If the sun is blazing — damage is less (0.3f), if there's a storm — it's more (0.5f)
                 float RadDamage = 0.3f; // for realis 5f -> 0.3f, 10f -> 0.5f
@@ -73,10 +77,27 @@ public class WeatherEventHandler {
                     
                 final float finalRadDamage = RadDamage;
 
-                player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
-                    radiation.addRadiation(finalRadDamage);
-                    ModEvents.applyRadiationStage(player, radiation.getRadiationByPercentage(), level);
-                });
+                if(!helmet.isEmpty() && helmet.getItem() instanceof ModArmorItem armorItem
+                        && armorItem.getMaterial() == ModArmorMaterials.GAS_MASK) {
+                        ModEvents.subRadiationStage(player, level, 1.0f);
+
+                        if (player.tickCount % 60 == 0) {
+                            level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                                    SoundEvents.PLAYER_BREATH,
+                                    SoundSource.PLAYERS, 0.4f, 0.8f);
+                        }
+
+                        if (level.getRandom().nextFloat() < 0.2f) {
+                            helmet.hurtAndBreak(1, player, (pPlayer) -> {
+                                pPlayer.broadcastBreakEvent(EquipmentSlot.HEAD);
+                            });
+                        }
+                } else {
+                    player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                        radiation.addRadiation(finalRadDamage);
+                        ModEvents.applyRadiationStage(player, radiation.getRadiationByPercentage(), level);
+                    });
+                }
                 return;
             }
             // If player didn't get exposed (night, in the mine, under the roof) gradually cleaning
