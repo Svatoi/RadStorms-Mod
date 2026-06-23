@@ -9,6 +9,7 @@ import com.radsto.radstorms.world.RadStormData;
 import com.radsto.radstorms.world.StormType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -79,18 +80,28 @@ public class WeatherEventHandler {
 
                 if(!helmet.isEmpty() && helmet.getItem() instanceof ModArmorItem armorItem
                         && armorItem.getMaterial() == ModArmorMaterials.GAS_MASK) {
-                        ModEvents.subRadiationStage(player, level, 1.0f);
 
-                        if (player.tickCount % 60 == 0) {
-                            level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                                    SoundEvents.PLAYER_BREATH,
-                                    SoundSource.PLAYERS, 0.4f, 0.8f);
-                        }
+                        int filterLeft = helmet.getOrCreateTag().getInt("FilterLeft");
 
-                        if (level.getRandom().nextFloat() < 0.2f) {
-                            helmet.hurtAndBreak(1, player, (pPlayer) -> {
-                                pPlayer.broadcastBreakEvent(EquipmentSlot.HEAD);
-                            });
+
+                        if (filterLeft > 0) {
+                            ModEvents.subRadiationStage(player, level, 1.0f);
+
+                            if (player.tickCount % 60 == 0) {
+                                level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                                        SoundEvents.PLAYER_BREATH,
+                                        SoundSource.PLAYERS, 0.4f, 0.8f);
+                            }
+
+                            filterLeft--;
+                            helmet.getOrCreateTag().putInt("FilterLeft", filterLeft);
+
+                            if (filterLeft <= 0) {
+                                level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                                        SoundEvents.PLAYER_BREATH,
+                                        SoundSource.PLAYERS, 0.4f, 0.8f);
+                                player.sendSystemMessage(Component.literal("§cФильтр противогаза полностью исчерпан!"));
+                            }
                         }
                 } else {
                     player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {

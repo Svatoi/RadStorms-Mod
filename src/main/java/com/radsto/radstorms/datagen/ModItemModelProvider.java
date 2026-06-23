@@ -45,6 +45,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         simpleItem(ModItems.EMPTY_ANTIDOT);
 
         trimmedArmorItem(ModItems.GAS_MASK);
+        simpleItem(ModItems.GAS_MASK_FILTER);
     }
 
     private ItemModelBuilder simpleItem(RegistryObject<Item> item) {

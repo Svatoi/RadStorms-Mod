@@ -2,6 +2,7 @@ package com.radsto.radstorms.items.custom;
 
 import com.google.common.collect.ImmutableMap;
 import com.radsto.radstorms.items.ModArmorMaterials;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -9,9 +10,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModArmorItem extends ArmorItem {
@@ -39,6 +43,26 @@ public class ModArmorItem extends ArmorItem {
                 }
             }
         }
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
+        if (stack.hasTag() && stack.getTag().contains("FilterLeft")) {
+            int filter = stack.getTag().getInt("FilterLeft");
+
+            int percent = filter / 10;
+
+            if (percent > 50) {
+                tooltip.add(Component.literal("§2Фильтр: " + percent + "%"));
+            } else if (percent > 15) {
+                tooltip.add(Component.literal("§6Фильтр: " + percent + "%"));
+            } else {
+                tooltip.add(Component.literal("§4Фильтр: " + percent + "% (Требуется замена!)"));
+            }
+        } else {
+            tooltip.add(Component.literal("§7Фильтр: Отсутствует"));
+        }
+        super.appendHoverText(stack, level, tooltip, flag);
     }
 
     private boolean isWearingGasMask(Player player) {

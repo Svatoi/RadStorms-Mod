@@ -22,6 +22,8 @@ public class ModItems {
 
     public static final RegistryObject<Item> GAS_MASK = ITEMS.register("gas_mask",
             () -> new ModArmorItem(ModArmorMaterials.GAS_MASK, ArmorItem.Type.HELMET, new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> GAS_MASK_FILTER = ITEMS.register("gas_mask_filter",
+            () -> new Item(new Item.Properties().stacksTo(16)));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
