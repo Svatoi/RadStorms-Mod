@@ -22,6 +22,7 @@ public class ModCreativeModTabs {
                         pOutput.accept(ModItems.EMPTY_ANTIDOT.get());
 
                         pOutput.accept(ModItems.GAS_MASK.get());
+                        pOutput.accept(ModItems.GAS_MASK_FILTER.get());
                     })
                     .build());
 

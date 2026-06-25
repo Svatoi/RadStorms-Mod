@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.radsto.radstorms.items.ModCreativeModTabs;
 import com.radsto.radstorms.items.ModItems;
 import com.radsto.radstorms.network.ModMessages;
+import com.radsto.radstorms.recipe.ModRecipes;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -24,6 +25,8 @@ public class RadStormsMod {
         ModCreativeModTabs.register(modEventBus);
 
         ModItems.ITEMS.register(modEventBus);
+
+        ModRecipes.register(modEventBus);
 
         GeckoLib.initialize();
 

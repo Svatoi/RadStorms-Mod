@@ -102,6 +102,7 @@ public class WeatherEventHandler {
                                         SoundSource.PLAYERS, 0.4f, 0.8f);
                                 player.sendSystemMessage(Component.literal("§cФильтр противогаза полностью исчерпан!"));
                             }
+                            return;
                         }
                 } else {
                     player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
