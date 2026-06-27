@@ -2,11 +2,17 @@ package com.radsto.radstorms.items.custom;
 
 import com.google.common.collect.ImmutableMap;
 import com.radsto.radstorms.items.ModArmorMaterials;
+import com.radsto.radstorms.items.ModItems;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
@@ -88,6 +94,30 @@ public class ModArmorItem extends ArmorItem {
 
     private void addStatusEffect(Player player, MobEffectInstance effectInstance) {
         player.addEffect(new MobEffectInstance(effectInstance));
+    }
+
+    public boolean overrideOtherStackedOnMe(ItemStack pStack, ItemStack pOther, Slot pSlot, ClickAction pAction, Player pPlayer, SlotAccess pAccess) {
+        if (pAction == ClickAction.SECONDARY) {
+            if(!pOther.isEmpty() && pOther.getItem() == ModItems.GAS_MASK_FILTER.get()) {
+                int currentFilter = pStack.getOrCreateTag().getInt("FilterLeft");
+
+                if (currentFilter >= 1000) {
+                    return false;
+                }
+
+                pStack.getOrCreateTag().putInt("FilterLeft", 1000);
+
+                pOther.shrink(1);
+
+                pPlayer.level().playSound(null, pPlayer.getX(), pPlayer.getY(), pPlayer.getZ(),
+                        SoundEvents.ARMOR_EQUIP_LEATHER,
+                        SoundSource.PLAYERS, 0.8f, 1.2f);
+
+                return true;
+            }
+        }
+
+        return super.overrideOtherStackedOnMe(pStack, pOther, pSlot, pAction, pPlayer, pAccess);
     }
 
 //
