@@ -4,9 +4,11 @@ import com.radsto.radstorms.RadStormsMod;
 import com.radsto.radstorms.capability.PlayerRadiationProvider;
 import com.radsto.radstorms.event.ModEvents;
 import com.radsto.radstorms.items.ModArmorMaterials;
+import com.radsto.radstorms.items.ModItems;
 import com.radsto.radstorms.items.custom.ModArmorItem;
 import com.radsto.radstorms.world.RadStormData;
 import com.radsto.radstorms.world.StormType;
+import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -66,6 +68,22 @@ public class WeatherEventHandler {
             boolean underPassiveContamination = (currentStorm == StormType.RAD_CONTAMINATION) && isInDangerZone;
 
             ItemStack helmet = player.getInventory().getArmor(3);
+
+            if (hasGeigerCounter(player)) {
+                int tickInterval = 40;
+
+                if (currentStorm == StormType.SOLAR_FLARE) tickInterval = 20;
+                if (currentStorm == StormType.RAD_RAIN) tickInterval = 10;
+                if (currentStorm == StormType.NUCLEAR_BLOWOUT) tickInterval = 5;
+                if (currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) tickInterval = 2;
+
+                if (player.tickCount % tickInterval == 0) {
+                    float randomPitch = 1.4f + level.getRandom().nextFloat() * 0.5f;
+                    level.playSound(null, player.getX(), player.getY(), player.getZ(),
+                            SoundEvents.UI_BUTTON_CLICK.get(),
+                            SoundSource.PLAYERS, 0.4f, randomPitch);
+                }
+            }
 
             if (underStorm || underSun || underPassiveContamination) {
                 // If the sun is blazing — damage is less (0.3f), if there's a storm — it's more (0.5f)
@@ -218,6 +236,16 @@ public class WeatherEventHandler {
                 }
             }
         }
+    }
+
+    private static boolean hasGeigerCounter(Player player) {
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (!stack.isEmpty() && stack.getItem() == ModItems.GEIGER_COUNTER.get()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -25,6 +25,9 @@ public class ModItems {
     public static final RegistryObject<Item> GAS_MASK_FILTER = ITEMS.register("gas_mask_filter",
             () -> new Item(new Item.Properties().stacksTo(16)));
 
+    public static final RegistryObject<Item> GEIGER_COUNTER = ITEMS.register("geiger_counter",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

@@ -46,6 +46,8 @@ public class ModItemModelProvider extends ItemModelProvider {
 
         trimmedArmorItem(ModItems.GAS_MASK);
         simpleItem(ModItems.GAS_MASK_FILTER);
+
+        simpleItem(ModItems.GEIGER_COUNTER);
     }
 
     private ItemModelBuilder simpleItem(RegistryObject<Item> item) {

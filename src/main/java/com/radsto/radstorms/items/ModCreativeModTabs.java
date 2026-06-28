@@ -23,6 +23,8 @@ public class ModCreativeModTabs {
 
                         pOutput.accept(ModItems.GAS_MASK.get());
                         pOutput.accept(ModItems.GAS_MASK_FILTER.get());
+
+                        pOutput.accept(ModItems.GEIGER_COUNTER.get());
                     })
                     .build());
 

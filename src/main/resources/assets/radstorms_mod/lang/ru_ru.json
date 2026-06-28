@@ -5,5 +5,7 @@
   "item.radstorms_mod.gas_mask": "Противогаз",
   "item.radstorms_mod.gas_mask_filter": "Фильтер для противогаза",
 
+  "item.radstorms_mod.geiger_counter": "Счётчик Гейгера",
+
   "creativetab.radstorm_tab": "RadStorms"
 }
