@@ -1,0 +1,8 @@
+{
+  "geiger_click": {
+    "subtitle": "sound.radstorms_mod.geiger_click",
+    "sounds": [
+      "radstorms_mod:geiger_click"
+    ]
+  }
+}

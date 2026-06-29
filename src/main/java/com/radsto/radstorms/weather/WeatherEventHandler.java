@@ -6,9 +6,9 @@ import com.radsto.radstorms.event.ModEvents;
 import com.radsto.radstorms.items.ModArmorMaterials;
 import com.radsto.radstorms.items.ModItems;
 import com.radsto.radstorms.items.custom.ModArmorItem;
+import com.radsto.radstorms.sound.ModSounds;
 import com.radsto.radstorms.world.RadStormData;
 import com.radsto.radstorms.world.StormType;
-import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -32,6 +32,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Mod.EventBusSubscriber(modid = RadStormsMod.MOD_ID)
 public class WeatherEventHandler {
@@ -77,10 +79,20 @@ public class WeatherEventHandler {
                 if (currentStorm == StormType.NUCLEAR_BLOWOUT) tickInterval = 5;
                 if (currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) tickInterval = 2;
 
-                if (player.tickCount % tickInterval == 0) {
+                AtomicInteger finalTickInterval = new AtomicInteger(tickInterval);
+                player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
+                    float radPercent = radiation.getRadiationByPercentage();
+                    if (radPercent >= 10.0f) finalTickInterval.set(30);
+                    if (radPercent >= 35.0f) finalTickInterval.set(15);
+                    if (radPercent >= 65.0f) finalTickInterval.set(6);
+                    if (radPercent >= 90.0f) finalTickInterval.set(2);
+                    if (radPercent >= 100.0f) finalTickInterval.set(1);
+                });
+
+                if (player.tickCount % finalTickInterval.get() == 0) {
                     float randomPitch = 1.4f + level.getRandom().nextFloat() * 0.5f;
                     level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                            SoundEvents.UI_BUTTON_CLICK.get(),
+                            ModSounds.GEIGER_CLICK.get(),
                             SoundSource.PLAYERS, 0.4f, randomPitch);
                 }
             }

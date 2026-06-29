@@ -5,6 +5,7 @@ import com.radsto.radstorms.items.ModCreativeModTabs;
 import com.radsto.radstorms.items.ModItems;
 import com.radsto.radstorms.network.ModMessages;
 import com.radsto.radstorms.recipe.ModRecipes;
+import com.radsto.radstorms.sound.ModSounds;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -27,6 +28,8 @@ public class RadStormsMod {
         ModItems.ITEMS.register(modEventBus);
 
         ModRecipes.register(modEventBus);
+
+        ModSounds.register(modEventBus);
 
         GeckoLib.initialize();
 
