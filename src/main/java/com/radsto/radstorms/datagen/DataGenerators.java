@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = RadStormsMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class DataGenerators {
+class DataGenerators {
     @SubscribeEvent
     public static void gatherDate(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();

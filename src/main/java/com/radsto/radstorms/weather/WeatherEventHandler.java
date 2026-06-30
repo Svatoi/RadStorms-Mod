@@ -73,15 +73,12 @@ public class WeatherEventHandler {
 
             if (hasGeigerCounter(player)) {
                 int tickInterval = 40;
-
-                if (currentStorm == StormType.SOLAR_FLARE) tickInterval = 20;
-                if (currentStorm == StormType.RAD_RAIN) tickInterval = 10;
-                if (currentStorm == StormType.NUCLEAR_BLOWOUT) tickInterval = 5;
-                if (currentStorm == StormType.SUPER_SOLAR_APOCALYPSE) tickInterval = 2;
-
                 AtomicInteger finalTickInterval = new AtomicInteger(tickInterval);
                 player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
                     float radPercent = radiation.getRadiationByPercentage();
+
+                    if (radPercent == 0.0f) finalTickInterval.set(0);
+
                     if (radPercent >= 10.0f) finalTickInterval.set(30);
                     if (radPercent >= 35.0f) finalTickInterval.set(15);
                     if (radPercent >= 65.0f) finalTickInterval.set(6);
@@ -89,7 +86,7 @@ public class WeatherEventHandler {
                     if (radPercent >= 100.0f) finalTickInterval.set(1);
                 });
 
-                if (player.tickCount % finalTickInterval.get() == 0) {
+                if (finalTickInterval.get() > 0 && player.tickCount % finalTickInterval.get() == 0) {
                     float randomPitch = 1.4f + level.getRandom().nextFloat() * 0.5f;
                     level.playSound(null, player.getX(), player.getY(), player.getZ(),
                             ModSounds.GEIGER_CLICK.get(),
