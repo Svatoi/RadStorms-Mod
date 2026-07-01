@@ -77,7 +77,10 @@ public class WeatherEventHandler {
                 player.getCapability(PlayerRadiationProvider.PLAYER_RADIATION).ifPresent(radiation -> {
                     float radPercent = radiation.getRadiationByPercentage();
 
-                    if (radPercent == 0.0f) finalTickInterval.set(0);
+                    if (currentStorm == StormType.NONE && radPercent == 0.0f) {
+                        finalTickInterval.set(-1);
+                        return;
+                    }
 
                     if (radPercent >= 10.0f) finalTickInterval.set(30);
                     if (radPercent >= 35.0f) finalTickInterval.set(15);
